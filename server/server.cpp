@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <windows.h>
-#include <thread>
+//#include <thread>
 #include <cstdio>
 #include <cstring>
 #include <list>
@@ -32,30 +32,26 @@ bool            online_using =  0;
 char name[NAME_LEN];
 FILE *fp,*fp2;
 void NewHandle(SOCKET &SockFrom);
-void Wrong_exit(const char* Error_place, int _Code)
-{
+void Wrong_exit(const char* Error_place, int _Code) {
 	printf("%s wrong!(at: %d)\n", Error_place, _Code);
 	system("pause");
 	exit(_Code);
 }
 
-void show_time()
-{
+void show_time() {
 	static char time_l[20], time_n[20];
 	static time_t timep;
 	{
 		time(&timep);
 		strftime(time_n, sizeof(time_n), "%Y-%m-%d %H:%M", localtime(&timep));
-		if (strcmp(time_l, time_n))
-		{
+		if (strcmp(time_l, time_n)) {
 			strcpy(time_l, time_n);
 			printf("//             %s\n", time_n);
 		}
 	}
 }
 
-void broadcast(const char* name, const char* send_buf)
-{
+void broadcast(const char* name, const char* send_buf) {
 	static char ls_send[SEND_LEN];
 
 	strcpy(ls_send, name);
@@ -74,36 +70,29 @@ void broadcast(const char* name, const char* send_buf)
 	online_using = 0;
 }
 
-void flash_online_num()
-{
+void flash_online_num() {
 	static char title[100];
 	if(online.empty()) strcpy(title, "title=bb-xjrjyy-Server");
 	else sprintf(title, "title=bb-xjrjyy-Server online_now:: %d", online.size());
 	system(title);
 }
 
-DWORD WINAPI child_thread(LPVOID V_sock)
-{
+DWORD WINAPI child_thread(LPVOID V_sock) {
 	SOCKET hsock = (SOCKET) V_sock;
 	char namea[NAME_LEN],recvbuf[STR_MAX_LEN],mml[MML_LEN];
 	strcpy(namea,name);
 	show_time();
 	printf("%s login Successful!\n", namea);
 	flash_online_num();
-	while(true)
-	{
+	while(true) {
 		int fhz=recv(hsock, mml, MML_LEN, 0);
 		if(!strcmp(recvbuf, "ord::EXIT")||fhz==SOCKET_ERROR||fhz==0) break;
-		if(strcmp(mml,"lt")==0)
-		{
+		if(strcmp(mml,"lt")==0) {
 			fhz=recv(hsock, recvbuf, STR_MAX_LEN, 0);
 			if(!strcmp(recvbuf, "ord::EXIT")||fhz==SOCKET_ERROR||fhz==0) break;
 			broadcast(name, recvbuf);
-		}
-		else
-		{
-			if(strcmp(mml,"tc")==0/*strcmp(mml,"zc")==0||strcmp(mml,"dl")==0*/)
-			{
+		} else {
+			if(strcmp(mml,"tc")==0/*strcmp(mml,"zc")==0||strcmp(mml,"dl")==0*/) {
 				break;
 			}
 		}
@@ -119,16 +108,14 @@ DWORD WINAPI child_thread(LPVOID V_sock)
 	return 0;
 }
 
-void NewHandle(SOCKET &SockFrom)
-{
+void NewHandle(SOCKET &SockFrom) {
 	HANDLE  ls_handle;
 	DWORD    ls_handle_id;
 	ls_handle = (HANDLE)::CreateThread(NULL, 0,
 	                                   child_thread, (LPVOID)SockFrom, 0, &ls_handle_id);
 }
 
-int main()
-{
+int main() {
 	system("chcp 936>nul");
 	system("title=bb-xjrjyy-Server");
 	puts("bb-xjrjyy-Server");
@@ -152,14 +139,11 @@ int main()
 		Wrong_exit("listen", 2);
 
 	int Socklen = sizeof(sockaddr);
-	while(true)
-	{
+	while(true) {
 		SOCKET SockFrom;
 		SockFrom = accept(SockServer, (sockaddr*)&FromAddr, &Socklen);
-		if(SockFrom != INVALID_SOCKET)
-		{
-			if(online.size() < MAX_ONLINE)
-			{
+		if(SockFrom != INVALID_SOCKET) {
+			if(online.size() < MAX_ONLINE) {
 //              while(online_using)
 //                  online_using = 1;
 				char pwd[PWD_LEN],pwdtmp[PWD_LEN],mml[MML_LEN];
@@ -167,12 +151,9 @@ int main()
 				bool zcf=0,dlf=0;
 				recv(SockFrom, mml, MML_LEN, 0);
 				cout<<"\n-----------接收旗帜------------\n"<<mml<<endl;
-				if(mml[0]=='t')
-				{
+				if(mml[0]=='t') {
 					recv(SockFrom, mml, MML_LEN, 0);
-				}
-				else if(mml[0]=='z')
-				{
+				} else if(mml[0]=='z') {
 					memset(pwd,0,sizeof(pwd));
 					memset(name,0,sizeof(name));
 					cout<<"some one want to reg\n";
@@ -180,9 +161,7 @@ int main()
 					recv(SockFrom, name, NAME_LEN, 0);
 					recv(SockFrom, pwd, PWD_LEN, 0);
 					cout<<"copy inf\n";
-				}
-				else if(mml[0]=='d')
-				{
+				} else if(mml[0]=='d') {
 					memset(pwd,0,sizeof(pwd));
 					memset(name,0,sizeof(name));
 					dlf=1;
@@ -192,12 +171,10 @@ int main()
 				}
 				sprintf(tmpcd,"%s.txt",name);
 //              cout<<zcf<<"------------"<<name<<endl;
-				if(zcf)
-				{
+				if(zcf) {
 					cout<<"some one want to reg with pas:"<<pwd<<" and name "<<name<<endl;
 					freopen(tmpcd,"r",stdin);
-					if(freopen(tmpcd,"r",stdin)==NULL)
-					{
+					if(freopen(tmpcd,"r",stdin)==NULL) {
 						cout<<"not found so didn't reg\n";
 						fclose(stdin);
 						fp=fopen(tmpcd,"w");
@@ -213,38 +190,30 @@ int main()
 						continue;
 					}
 					//scanf("%s",pwdtmp)==-1
-					else
-					{
+					else {
 						cout<<"have been\n";
 						send(SockFrom, aznok, strlen(aznok), 0);
 						fclose(stdin);
 						continue;
 					}
-				}
-				else if(dlf)
-				{
+				} else if(dlf) {
 					//在这里写登陆判定
 					printf("some one want to login with name: %s and pas: %s\n", name, pwd);
-					if(freopen(tmpcd,"r",stdin)==NULL)
-					{
+
+					if(freopen(tmpcd,"r",stdin)==NULL) {
 						cout<<"false login didn't reg'!\n";
 						send(SockFrom, "F", strlen("F"), 0);
 						continue;
-					}
-					else
-					{
+					} else {
 						freopen(tmpcd,"r",stdin);
 						string a;
 						cin>>a;
 						fclose(stdin);
-						if(pwd!=a)
-						{
+						if(pwd!=a) {
 							cout<<"false!\n";
 							send(SockFrom, "W", strlen("W"), 0);
 							continue;
-						}
-						else
-						{
+						} else {
 							cout<<"successful!\n";
 							send(SockFrom, "T", strlen("T"), 0);
 						}
@@ -263,9 +232,7 @@ int main()
 					    send(hsock, anok, int(sizeof(anok)/sizeof(char)), 0);
 					    return 0;
 					}*/
-				}
-				else
-				{
+				} else {
 					online_using = 0;
 					continue;
 				}
@@ -274,9 +241,7 @@ int main()
 				online.push_back(SockFrom);
 				online_using = 0;
 				NewHandle(SockFrom);
-			}
-			else
-			{
+			} else {
 				send(SockFrom, Warn_Buf, strlen(Warn_Buf), 0);
 				closesocket(SockFrom);
 			}
