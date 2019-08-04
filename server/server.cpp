@@ -173,18 +173,14 @@ int main() {
 //              cout<<zcf<<"------------"<<name<<endl;
 				if(zcf) {
 					cout<<"some one want to reg with pas:"<<pwd<<" and name "<<name<<endl;
-					freopen(tmpcd,"r",stdin);
-					if(freopen(tmpcd,"r",stdin)==NULL) {
+//					cout<<tmpcd<<endl;
+					if(freopen(name,"r",stdin)==NULL) {
 						cout<<"not found so didn't reg\n";
 						fclose(stdin);
-						fp=fopen(tmpcd,"w");
-						fclose(fp);
-						Sf.open(tmpcd);
-						Sf<<pwd<<"\n";
-						Sf.close();
-						//freopen(tmpcd,"w",stdout);
-						//printf("%s",pwd);
-						//freopen("CON","a",stdout);
+						freopen(name,"w",stdout);
+//						freopen(tmpcd,"w",stdout);
+						printf("%s\n\n",pwd);
+						freopen("CON","a",stdout);
 						printf("%s register Successful!\n", name);
 						send(SockFrom, azok, strlen(azok), 0);
 						continue;
@@ -199,15 +195,16 @@ int main() {
 				} else if(dlf) {
 					//在这里写登陆判定
 					printf("some one want to login with name: %s and pas: %s\n", name, pwd);
-
-					if(freopen(tmpcd,"r",stdin)==NULL) {
+					if(freopen(name,"r",stdin)==NULL) {
 						cout<<"false login didn't reg'!\n";
 						send(SockFrom, "F", strlen("F"), 0);
 						continue;
 					} else {
-						freopen(tmpcd,"r",stdin);
+						fclose(stdin);
+						freopen(name,"r",stdin);
 						string a;
 						cin>>a;
+						cout<<"getpas is "<<name<<" "<<a<<endl;
 						fclose(stdin);
 						if(pwd!=a) {
 							cout<<"false!\n";
@@ -216,6 +213,16 @@ int main() {
 						} else {
 							cout<<"successful!\n";
 							send(SockFrom, "T", strlen("T"), 0);
+							char his[STR_MAX_LEN],cp[1];
+							freopen("rr.txt","r",stdin);
+//							string a;
+							while(cp[0]!=EOF)
+							{
+								cp[0]=getchar();
+//								cout<<his<<endl;
+								send(SockFrom,cp,1,0);
+							}
+							fclose(stdin);
 						}
 					}
 //                    if()

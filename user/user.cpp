@@ -17,6 +17,7 @@
 #define IN_MAX_CO 5
 #define DK 5328
 using namespace std;
+void restart_exe();
 const int W_s=11,W_ss=15;
 const char zcc[]="zc",dlc[]="dl",ltc[]="lt",tcc[]="tc",quake[]="quake",o_IP[]="127.0.0.1";
 char sendbuf[STR_MAX_LEN],recvbuf[STR_MAX_LEN],memobuf[MEM_STR_LEN],namebuf[NAME_MAX_LEN+1],pwdbuf[PWD_MAX_LEN+1];
@@ -26,17 +27,20 @@ int cgd=-1;
 void hwndOutput_add_buf(HWND, const char*, bool n = 1);
 char time_l[20], time_n[20];
 time_t timep;
-void show_time(HWND hwndout) {
+void show_time(HWND hwndout)
+{
 	time(&timep);
 	strftime(time_n, sizeof(time_n),"%Y-%m-%d %H:%M", localtime(&timep));
-	if(strcmp(time_l, time_n)) {
+	if(strcmp(time_l, time_n))
+	{
 		strcpy(time_l,time_n);
 		strcat(memobuf,"//             ");
 		strcat(memobuf,time_n);
 		strcat(memobuf,"\r\n");
 	}
 }
-SOCKET gotsock(HWND hwndmind) {
+SOCKET gotsock(HWND hwndmind)
+{
 	WSADATA wsd;
 	WSAStartup(MAKEWORD(2,2),&wsd);
 	SOCKET SockUser;
@@ -45,19 +49,24 @@ SOCKET gotsock(HWND hwndmind) {
 	ServerAddr.sin_port            =htons(DK);
 	ServerAddr.sin_addr.S_un.S_addr=inet_addr(o_IP);
 	SockUser = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect(SockUser, (sockaddr*)&ServerAddr, sizeof(sockaddr)) != SOCKET_ERROR) {
+	if (connect(SockUser, (sockaddr*)&ServerAddr, sizeof(sockaddr)) != SOCKET_ERROR)
+	{
 		strcat(memobuf, "//========服务器连接成功========//\r\n");
 		hwndOutput_add_buf(hwndmind, "", 0);
 		return SockUser;
-	} else {
+	}
+	else
+	{
 		MessageBox(NULL,"服务器不在线!","Error!",MB_ICONEXCLAMATION|MB_OK);
 		exit(0);
 	}
 }
-void w_send(HWND hwndin,HWND hwndlog) {
+void w_send(HWND hwndin,HWND hwndlog)
+{
 	GetWindowText(hwndin,sendbuf,STR_MAX_LEN);
 	SetWindowText(hwndin, "");
-	if(!strcmp(sendbuf,"ord::cls")) {
+	if(!strcmp(sendbuf,"ord::cls"))
+	{
 		strcpy(memobuf,"//==========已清理内存==========//");
 		hwndOutput_add_buf(hwndlog,"");
 		return;
@@ -66,21 +75,26 @@ void w_send(HWND hwndin,HWND hwndlog) {
 	send(connection,sendbuf,STR_MAX_LEN,0);
 	if(!strcmp(sendbuf,"ord::EXIT"))exit(0);
 }
-DWORD WINAPI w_recv(LPVOID hwndout) {
+DWORD WINAPI w_recv(LPVOID hwndout)
+{
 	HWND hwndOut=(HWND)hwndout;
 	int noxtime=0;
-	while(noxtime<3) {
+	while(noxtime<3)
+	{
 		recv(connection,recvbuf,STR_MAX_LEN, 0);
-		if(*recvbuf) {
+		if(*recvbuf)
+		{
 			noxtime = 0;
 			hwndOutput_add_buf(hwndOut, recvbuf);
-		} else noxtime++;
+		}
+		else noxtime++;
 		*recvbuf='\0';
 	}
 	MessageBox(NULL,"服务器已下线,将退出程序!","Error!",MB_ICONEXCLAMATION|MB_OK);
 	exit(0);
 }
-int zc(LPVOID hwndout) {
+int zc(LPVOID hwndout)
+{
 	HWND hwndOut=(HWND)hwndout;
 	int aaaa;
 	send(connection,zcc,strlen(zcc), 0);
@@ -89,38 +103,53 @@ int zc(LPVOID hwndout) {
 	send(connection,pwdbuf,PWD_MAX_LEN, 0);
 	int noxtime=0;
 	*recvbuf='\0';
-	while(noxtime<3) {
+	while(noxtime<3)
+	{
 		recv(connection, recvbuf, STR_MAX_LEN, 0);
-		if(*recvbuf) {
+		if(*recvbuf)
+		{
 			noxtime = 0;
 			break;
-		} else noxtime++;
+		}
+		else noxtime++;
 		*recvbuf='\0';
 	}
-	if(noxtime==3) {
+	if(noxtime==3)
+	{
 		MessageBox(NULL,"服务器已下线,将退出程序!","Error!",MB_ICONEXCLAMATION|MB_OK);
 		exit(0);
 	}
-	if(recvbuf[0]=='3') {
+	if(recvbuf[0]=='3')
+	{
 
-		MessageBox(NULL,"注册失败！账户重复！请重启后再次尝试|3秒后自动.", "Error!",MB_OK);
-		Sleep(3000);
-		string a="start "+(string)(_pgmptr);
-		system(a.c_str());
+		MessageBox(NULL,"注册失败！账户重复！请重启后再次尝试|点击确定后自动.", "Error!",MB_OK);
+		restart_exe();
 		exit(0);
-	} else {
+	}
+	else
+	{
 		HWND hwnd;
-		MessageBox(NULL,"注册成功!请重启后登录!|3秒后自动.","Error",MB_OK);
-		Sleep(3000);
-		string a="start "+(string)(_pgmptr);
-		system(a.c_str());
+		MessageBox(NULL,"注册成功!请重启后登录!|点击确定后自动.","Error",MB_OK);
+		restart_exe();
 		exit(0);
 	}
 	sscanf(recvbuf,"%d",&aaaa);
 	return aaaa;
 }
 int dltry=0;
-int dl(LPVOID hwndout) { //登陆?gin？?
+void messgage_error(string ark)
+{
+	MessageBox(NULL,ark.c_str(),"Error!",MB_ICONEXCLAMATION|MB_OK);
+	return;
+}
+void restart_exe()
+{
+	string ak = "start "+ (string)(_pgmptr);
+	system(ak.c_str());
+	exit(0);
+}
+int dl(LPVOID hwndout)   //登陆?gin？?
+{
 	dltry+=1;
 	HWND hwndOut=(HWND) hwndout;
 	int aaaa;
@@ -129,33 +158,36 @@ int dl(LPVOID hwndout) { //登陆?gin？?
 	send(connection, namebuf, NAME_MAX_LEN, 0);
 	send(connection, pwdbuf, PWD_MAX_LEN, 0);
 	int noxtime = 0;
-	while(noxtime<3) {
+	while(noxtime<3)
+	{
 		recv(connection,recvbuf, STR_MAX_LEN, 0);
-		if(recvbuf[0]=='F') {
-			hwndOutput_add_buf(hwndOut, "登录失败，账户不存在！\n请重启后再次尝试，三秒后自动！");
-			Sleep(4000);
-			string a = "start "+(string)(_pgmptr);
-			system(a.c_str());
-			exit(0);
+		if(recvbuf[0]=='F')
+		{
+			messgage_error("登录失败，账户不存在！\n请重启后再次尝试，点击确定自动！");
+			restart_exe();
 			return 2;
-		} else if(recvbuf[0]=='T') {
+		}
+		else if(recvbuf[0]=='T')
+		{
 			return 0;
-		} else if(recvbuf[0]=='W') {
-			hwndOutput_add_buf(hwndOut, "登录失败，密码错误！\n请重启后再次尝试，三秒后自动！");
-			Sleep(3000);
-			string a="start "+(string)(_pgmptr);
-			system(a.c_str());
-			exit(0);
+		}
+		else if(recvbuf[0]=='W')
+		{
+			messgage_error( "登录失败，密码错误！\n请重启后再次尝试，点击确定自动！");
+			restart_exe();
 			return 1;
 		}
-		if(*recvbuf) {
+		if(*recvbuf)
+		{
 			noxtime=0;
 			break;
-		} else noxtime++;
+		}
+		else noxtime++;
 		*recvbuf='\0';
 	}
-	if(noxtime==3) {
-		hwndOutput_add_buf(hwndOut,"//=!服务器已下线,3秒后退出程序!=//");
+	if(noxtime==3)
+	{
+		messgage_error("//=!服务器已下线,3秒后退出程序!=//");
 		Sleep(3000);
 		exit(0);
 	}
@@ -163,7 +195,8 @@ int dl(LPVOID hwndout) { //登陆?gin？?
 	return aaaa;
 }
 int len;
-void hwndOutput_add_buf(HWND hwnd,const char *buf,bool n) {
+void hwndOutput_add_buf(HWND hwnd,const char *buf,bool n)
+{
 	while(outlock);
 	outlock=1;
 	len=strlen(memobuf);
@@ -185,9 +218,12 @@ HWND hwndOut,hwndIn,hwndts,hwndname,hwndpwd;
 int wmID;
 int tu0=-6,step;
 HWND hwnd;
-LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam) {
-	switch(Message) {
-		case WM_CREATE: {
+LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam)
+{
+	switch(Message)
+	{
+		case WM_CREATE:
+		{
 			hwndOut=CreateWindow(TEXT("edit"),NULL,WS_CHILD|WS_VISIBLE|WS_VSCROLL|WS_BORDER|ES_LEFT|ES_MULTILINE|ES_AUTOVSCROLL|WS_DISABLED,
 			                     0,0,620,346,hwnd,(HMENU)OUT_TEXT,((LPCREATESTRUCT)lParam)->hInstance,NULL);
 			hwndIn=CreateWindow(TEXT("edit"),NULL,WS_CHILD|WS_VISIBLE|WS_HSCROLL|WS_VSCROLL|WS_BORDER|ES_LEFT|ES_MULTILINE|ES_AUTOVSCROLL,
@@ -210,22 +246,28 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam) {
 			Edit_LimitText(hwndpwd,PWD_MAX_LEN);
 			break;
 		}
-		case WM_PAINT: {
+		case WM_PAINT:
+		{
 			hdc=BeginPaint(hwnd, &ps);
 			EndPaint(hwnd,&ps);
 			break;
 		}
-		case WM_CLOSE: {
+		case WM_CLOSE:
+		{
 			exit(0);
 		}
-		case WM_COMMAND: {
+		case WM_COMMAND:
+		{
 			wmID=LOWORD(wParam);
-			switch(wmID) {
-				case B_DOWN: {
+			switch(wmID)
+			{
+				case B_DOWN:
+				{
 					w_send(hwndIn,hwndOut);
 					break;
 				}
-				case qd_DOWN: {
+				case qd_DOWN:
+				{
 					memset(namebuf,0,sizeof namebuf);
 					memset(pwdbuf,0,sizeof pwdbuf);
 					GetWindowText(hwndname, namebuf, NAME_MAX_LEN);
@@ -234,22 +276,40 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam) {
 					else if(strlen(namebuf)>NAME_MAX_LEN)MessageBox(NULL,"名字过长!","Error!",MB_ICONEXCLAMATION|MB_OK);
 					else if(strlen(pwdbuf)<PWD_MIN_LEN)MessageBox(hwnd,"密码过短!", "Error!",MB_OK);
 					else if(strlen(pwdbuf)>PWD_MAX_LEN)MessageBox(hwnd,"密码过长!", "Error!",MB_OK);
-					else {
+					else
+					{
 						if(cgd==0)send(connection,tcc,strlen(tcc),0);
 						cgd=dl((LPVOID)hwndOut);
-						if(cgd==0) {
+						if(cgd==0)
+						{
 							strcat(memobuf,"\r\n");
+							char his[STR_MAX_LEN];
+							char kp[1];
+							for(;;)
+							{
+								recv(connection, kp, 1, 0);
+								if(kp[0]==EOF)
+									break;
+//								recv(connection, his, STR_MAX_LEN, 0);
+//								MessageBox(NULL,kp,"Error!",MB_OK);
+								strcat(memobuf,kp);
+							}
 							step=1;
+//							MessageBox(NULL,"out","Error!",MB_ICONEXCLAMATION|MB_OK);
 							wc_listen=(HANDLE)::CreateThread(NULL,0,w_recv,(LPVOID)hwndOut,0,&wc_listenID);
-						} else {
-							if(cgd==1)MessageBox(NULL,"密码错误!请退出后重新登录！两秒后自动!","Error!",MB_ICONEXCLAMATION|MB_OK);
-							if(cgd==2)MessageBox(NULL,"账号不存在!请退出后重新登录！两秒后自动！","Error!",MB_ICONEXCLAMATION|MB_OK);
+						}
+						else
+						{
+							if(cgd==1)MessageBox(NULL,"密码错误!请退出后重新登录！点击确定后自动!","Error!",MB_ICONEXCLAMATION|MB_OK);
+							if(cgd==2)MessageBox(NULL,"账号不存在!请退出后重新登录！点击确定后自动！","Error!",MB_ICONEXCLAMATION|MB_OK);
+							restart_exe();
 						}
 					}
 					SetWindowText(hwndOut, memobuf);
 					break;
 				}
-				case zc_DOWN: {
+				case zc_DOWN:
+				{
 					int cg;
 					GetWindowText(hwndname, namebuf, NAME_MAX_LEN);
 					GetWindowText(hwndpwd, pwdbuf, PWD_MAX_LEN);
@@ -257,10 +317,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam) {
 					else if(strlen(namebuf)>NAME_MAX_LEN)MessageBox(NULL,"名字过长!","Error!",MB_ICONEXCLAMATION|MB_OK);
 					else if(strlen(pwdbuf)<PWD_MIN_LEN)MessageBox(hwnd,"密码过短!", "Error!",MB_OK);
 					else if(strlen(pwdbuf)>PWD_MAX_LEN)MessageBox(hwnd,"密码过长!", "Error!",MB_OK);
-					else {
+					else
+					{
 						cg=zc((LPVOID)hwndOut);
 						if(cg==3)
-							MessageBox(hwnd,"帐号重复!", "Error!",MB_OK);
+							MessageBox(hwnd,"帐号重复!，请退出后重新登录，点击确定自动", "Error!",MB_OK);
+						restart_exe();
 					}
 					SetWindowText(hwndOut, memobuf);
 					break;
@@ -273,46 +335,40 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT Message,WPARAM wParam,LPARAM lParam) {
 	}
 	return 0;
 }
-int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow) {
-	char c[5]="aaaa";
-	srand(static_cast<unsigned int>(time(0)));
+int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow)
+{
 	WNDCLASSEX wc;
-	c[0]=rand()%26+'a';
-	wc.hCursor      =LoadCursor(NULL, IDC_ARROW);
 	memset(&wc,0,sizeof(wc));
-	c[1]=rand()%26+'a';
-	HWND hwnd;
-	wc.hIconSm      =LoadIcon(NULL,IDI_APPLICATION);
-	c[2]=rand()%26+'a';
-	wc.hbrBackground=(HBRUSH)(4);
 	MSG Msg;
-	c[3]=rand()%26+'a';
-	SetConsoleTitle(c);
-	while(FindWindow(NULL,c)==NULL)Sleep(30);
+	wc.hCursor      =LoadCursor(NULL, IDC_ARROW);
+	wc.hIconSm      =LoadIcon(NULL,IDI_APPLICATION);
+	wc.hbrBackground=(HBRUSH)(4);
 	wc.cbSize       =sizeof(WNDCLASSEX);
-	HWND CMP=FindWindow(NULL,c);
 	wc.hInstance    =hInstance;
-	ShowWindow(CMP,1);
 	wc.lpfnWndProc  =WndProc;
 	wc.lpszClassName="q";
 	wc.hIcon        =LoadIcon(NULL,IDI_APPLICATION);
-	if(!RegisterClassEx(&wc)) {
+	if(!RegisterClassEx(&wc))
+	{
 		MessageBox(NULL, "Window Registration Failed!","Error!", MB_ICONEXCLAMATION | MB_OK);
 		return 0;
 	}
-	hwnd=CreateWindowEx(WS_EX_CLIENTEDGE,"q","bb_v1.0.2", WS_VISIBLE|WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,
+	hwnd=CreateWindowEx(WS_EX_CLIENTEDGE,"q","CT_v1.2.1.1", WS_VISIBLE|WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,
 	                    CW_USEDEFAULT,CW_USEDEFAULT,640,480,NULL,NULL,hInstance,NULL);
-	if(hwnd==NULL) {
+	if(hwnd==NULL)
+	{
 		MessageBox(NULL,"Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
 		return 0;
 	}
 	ShowWindow(hwndOut,0);
 	ShowWindow(B_send,0);
 	ShowWindow(hwndIn,0);
-	while(GetMessage(&Msg,NULL,0,0)>0) {
+	while(GetMessage(&Msg,NULL,0,0)>0)
+	{
 		TranslateMessage(&Msg);
 		DispatchMessage(&Msg);
-		if(step==1) {
+		if(step==1)
+		{
 			ShowWindow(hwndOut,1);
 			ShowWindow(B_send,1);
 			ShowWindow(hwndIn,1);
